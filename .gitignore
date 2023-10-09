@@ -13,3 +13,4 @@ tmtags
 
 ## rvm/rbenv
 .ruby-version
+.env

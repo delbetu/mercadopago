@@ -2,22 +2,18 @@
 
 require File.expand_path('../../lib/mercadopago', __FILE__)
 
+require 'dotenv'
+Dotenv.load
+require 'byebug'
 require 'test/unit'
 require 'webmock/test_unit'
 require 'vcr'
 
-#
-# Valid credentials to be used in the tests.
-#
-CREDENTIALS = {
-  client_id: 'CLIENT-ID',
-  client_secret: 'CLIENT-SECRET' }
-
 VCR.configure do |config|
   config.cassette_library_dir = "fixtures/vcr_cassettes"
   config.hook_into :webmock
-  config.filter_sensitive_data('<CLIENT-ID>') { CREDENTIALS[:client_id] }
-  config.filter_sensitive_data('<CLIENT-SECRET>') { CREDENTIALS[:client_secret] }
+  config.filter_sensitive_data('<CLIENT-ID>') { ENV['CLIENT_ID'] }
+  config.filter_sensitive_data('<CLIENT-SECRET>') { ENV['CLIENT_SECRET'] }
 end
 
 class TestMercadoPago < Test::Unit::TestCase
@@ -69,8 +65,8 @@ class TestMercadoPago < Test::Unit::TestCase
   def test_that_authentication_returns_access_token
     VCR.use_cassette("login", match_requests_on: [:path]) do
       @response = MercadoPago::Authentication
-                    .access_token(CREDENTIALS[:client_id],
-                                  CREDENTIALS[:client_secret])
+                    .access_token(ENV['CLIENT_ID'],
+                                  ENV['CLIENT_SECRET'])
     end
 
     assert @response['access_token']
@@ -91,13 +87,13 @@ class TestMercadoPago < Test::Unit::TestCase
   # def test_that_refresh_token_works
   #   VCR.use_cassette("access_token") do
   #     @auth = MercadoPago::Authentication
-  #               .access_token(CREDENTIALS[:client_id],
-  #                             CREDENTIALS[:client_secret])
+  #               .access_token(ENV['CLIENT_ID'],
+  #                             ENV['CLIENT_SECRET'])
   #   end
   #   VCR.use_cassette("refresh_token") do
   #     @refresh = MercadoPago::Authentication.refresh_access_token(
-  #       CREDENTIALS[:client_id],
-  #       CREDENTIALS[:client_secret],
+  #       ENV['CLIENT_ID'],
+  #       ENV['CLIENT_SECRET'],
   #       @auth['refresh_token']
   #     )
   #   end
@@ -118,8 +114,8 @@ class TestMercadoPago < Test::Unit::TestCase
 
   def test_that_client_initializes_okay_with_valid_details
     VCR.use_cassette("login", match_requests_on: [:path]) do
-      @mp_client = MercadoPago::Client.new(CREDENTIALS[:client_id],
-                                           CREDENTIALS[:client_secret])
+      @mp_client = MercadoPago::Client.new(ENV['CLIENT_ID'],
+                                           ENV['CLIENT_SECRET'])
     end
 
     assert @mp_client.access_token
@@ -136,8 +132,8 @@ class TestMercadoPago < Test::Unit::TestCase
 
   def test_that_client_can_create_payment_preference
     VCR.use_cassette("login", match_requests_on: [:path]) do
-      @mp_client = MercadoPago::Client.new(CREDENTIALS[:client_id],
-                                           CREDENTIALS[:client_secret])
+      @mp_client = MercadoPago::Client.new(ENV['CLIENT_ID'],
+                                           ENV['CLIENT_SECRET'])
     end
 
     VCR.use_cassette("create preference", match_requests_on: [:method, :path]) do
@@ -148,8 +144,8 @@ class TestMercadoPago < Test::Unit::TestCase
 
   def test_that_client_can_get_preference
     VCR.use_cassette("login", match_requests_on: [:path]) do
-      @mp_client = MercadoPago::Client.new(CREDENTIALS[:client_id],
-                                           CREDENTIALS[:client_secret])
+      @mp_client = MercadoPago::Client.new(ENV['CLIENT_ID'],
+                                           ENV['CLIENT_SECRET'])
     end
 
     VCR.use_cassette("create preference", match_requests_on: [:method, :path]) do
@@ -166,7 +162,7 @@ class TestMercadoPago < Test::Unit::TestCase
   def test_that_client_can_create_preapproval_payment
     VCR.use_cassette("login", match_requests_on: [:path]) do
       @mp_client = MercadoPago::Client.new(
-        CREDENTIALS[:client_id], CREDENTIALS[:client_secret])
+        ENV['CLIENT_ID'], ENV['CLIENT_SECRET'])
     end
 
     VCR.use_cassette("create_preapproval", match_requests_on: [:path]) do
@@ -178,7 +174,7 @@ class TestMercadoPago < Test::Unit::TestCase
   def test_that_client_can_cancel_preapproval
     VCR.use_cassette("login", match_requests_on: [:path]) do
       @mp_client = MercadoPago::Client.new(
-        CREDENTIALS[:client_id], CREDENTIALS[:client_secret])
+        ENV['CLIENT_ID'], ENV['CLIENT_SECRET'])
     end
 
     VCR.use_cassette("create_preapproval", match_requests_on: [:path]) do
@@ -197,7 +193,7 @@ class TestMercadoPago < Test::Unit::TestCase
   # TODO: make test work again
   # def test_that_client_can_get_payment_notification
   #   VCR.use_cassette("login", match_requests_on: [:path]) do
-  #     @mp_client = MercadoPago::Client.new(CREDENTIALS[:client_id], CREDENTIALS[:client_secret])
+  #     @mp_client = MercadoPago::Client.new(ENV['CLIENT_ID'], ENV['CLIENT_SECRET'])
   #   end
   #
   #   @payment_id = 849707350
@@ -212,7 +208,7 @@ class TestMercadoPago < Test::Unit::TestCase
   # def test_that_client_can_get_merchant_order_notification
   #   payment_id = 61166827
   #   VCR.use_cassette("login", match_requests_on: [:path]) do
-  #     @mp_client = MercadoPago::Client.new(CREDENTIALS[:client_id], CREDENTIALS[:client_secret])
+  #     @mp_client = MercadoPago::Client.new(ENV['CLIENT_ID'], ENV['CLIENT_SECRET'])
   #   end
   #
   #   VCR.use_cassette("merchant notification") do
@@ -223,7 +219,7 @@ class TestMercadoPago < Test::Unit::TestCase
 
   def test_that_client_can_search
     VCR.use_cassette("login", match_requests_on: [:path]) do
-      @mp_client = MercadoPago::Client.new(CREDENTIALS[:client_id], CREDENTIALS[:client_secret])
+      @mp_client = MercadoPago::Client.new(ENV['CLIENT_ID'], ENV['CLIENT_SECRET'])
     end
 
     VCR.use_cassette("search status") do
@@ -235,7 +231,7 @@ class TestMercadoPago < Test::Unit::TestCase
 
   def test_that_search_can_be_paginated
     VCR.use_cassette("login", match_requests_on: [:path]) do
-      @mp_client = MercadoPago::Client.new(CREDENTIALS[:client_id], CREDENTIALS[:client_secret])
+      @mp_client = MercadoPago::Client.new(ENV['CLIENT_ID'], ENV['CLIENT_SECRET'])
     end
 
     @mp_client.auto_paginate = true

@@ -462,7 +462,7 @@ For example, if you request payment method status for an invalid operation, you 
 
 ### Tests
 
-This gem has tests for a few methods. To check if it is working properly, just run:
+This gem has tests for a few methods. To check if it is working properly, fill up .env file with CLIENT_ID and CLIENT_SECRET and run:
 
     rake test
 
